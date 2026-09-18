@@ -30,7 +30,6 @@ public class OllamaChatClient implements ChatClient {
         this.baseUrl = baseUrl;
         this.model = model;
 
-        // Configure timeouts to satisfy NFR-08 (finite timeout)
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout * 1000);
         factory.setReadTimeout(readTimeout * 1000);
@@ -42,7 +41,6 @@ public class OllamaChatClient implements ChatClient {
     public String ask(String systemContext, String userQuestion) {
         String url = baseUrl + "/api/chat";
 
-        // Building the JSON payload for Ollama as defined in section 8.6
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "stream", false,
@@ -57,6 +55,7 @@ public class OllamaChatClient implements ChatClient {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
         try {
+            // FIX: Using Map.class instead of ParameterizedTypeReference
             ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
             if (response.getBody() != null && response.getBody().containsKey("message")) {
                 Map<String, String> message = (Map<String, String>) response.getBody().get("message");
@@ -64,8 +63,6 @@ public class OllamaChatClient implements ChatClient {
             }
             return "The assistant could not generate a valid response.";
         } catch (RestClientException e) {
-            // Fail gracefully when Ollama is unavailable (FR-05 & 8.8)
             throw new DomainException(503, "OLLAMA_UNAVAILABLE", "AI Career Assistant is currently offline. Please try again later.");
         }
     }
-}
