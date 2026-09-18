@@ -66,3 +66,4 @@ public class OllamaChatClient implements ChatClient {
             throw new DomainException(503, "OLLAMA_UNAVAILABLE", "AI Career Assistant is currently offline. Please try again later.");
         }
     }
+}
